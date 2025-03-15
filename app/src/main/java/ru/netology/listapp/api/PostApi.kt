@@ -7,6 +7,7 @@ import io.ktor.client.network.sockets.ConnectTimeoutException
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsChannel
+import io.ktor.http.HttpStatusCode
 import io.ktor.utils.io.jvm.javaio.toInputStream
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.json.Json
@@ -31,7 +32,7 @@ suspend fun HttpClient.getPosts(page: Int): Either<ApiError, List<Post>> =
                 is ConnectTimeoutException, is UnknownHostException -> raise(ApiError.NetworkError)
                 is ClientRequestException -> {
                     when (it.response.status) {
-                        it.response.status -> emptyList()
+                        HttpStatusCode.NotFound -> emptyList()
                         else -> raise(ApiError.UnknownError)
                     }
                 }
