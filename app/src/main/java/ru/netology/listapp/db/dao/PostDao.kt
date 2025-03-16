@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import ru.netology.listapp.db.ListAppDb
 import ru.netology.listapp.db.entity.PostEntity
@@ -32,7 +33,7 @@ interface PostDao {
             .map { it.toPost() }
     }
 
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPostsInternal(posts: List<PostEntity>)
 
     suspend fun insertPosts(posts: List<Post>) {
