@@ -28,12 +28,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.flow.filter
 import ru.netology.listapp.api.ApiClient
 import ru.netology.listapp.api.getApiErrorTexts
 import ru.netology.listapp.db.dao.PostDao
+import ru.netology.listapp.domain.model.PostContent
 import ru.netology.listapp.domain.model.PostId
 import ru.netology.listapp.ui.model.PostUiModel
 import ru.netology.listapp.ui.model.PostUiState
@@ -108,6 +110,7 @@ private fun PostList(
 
     LazyColumn(
         state = listState,
+        horizontalAlignment = Alignment.CenterHorizontally,
         contentPadding = contentPadding,
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -170,10 +173,43 @@ private fun PostList(
             item {
                 CircularProgressIndicator(
                     modifier = Modifier
-                        .fillMaxWidth()
                         .padding(16.dp),
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PostListPreview() {
+    MaterialTheme {
+        PostList(
+            posts = listOf(
+                PostUiModel(
+                    id = PostId("1"),
+                    content = PostContent.Text("Угрожаю микробам с плавящимися лицами сбросить арбузы, чьи голоса текут в оперу, на похороны мусора, плод в шляпе из текущего теста рыдал: «Я — светило, растекающееся в бесконечный сон!»"),
+                    dateFormatted = "17.03.2025"
+                )
+            ),
+            onDelete = {},
+            onLoadMore = {},
+            isLoadingMore = false,
+            contentPadding = PaddingValues(16.dp)
+        )
+    }
+}
+
+@Preview(name = "Loading state", showBackground = true)
+@Composable
+fun PostListLoadingPreview() {
+    MaterialTheme {
+        PostList(
+            posts = emptyList(),
+            onDelete = {},
+            onLoadMore = {},
+            isLoadingMore = true,
+            contentPadding = PaddingValues(16.dp)
+        )
     }
 }
