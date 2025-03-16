@@ -10,26 +10,27 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.flow.filter
 import ru.netology.listapp.api.ApiClient
 import ru.netology.listapp.api.getApiErrorTexts
 import ru.netology.listapp.db.dao.PostDao
@@ -81,7 +82,6 @@ fun PostsScreen(
                 onDelete = viewModel::deletePost,
                 onLoadMore = viewModel::loadNextPage,
                 isLoadingMore = state.isLoadingMore,
-                hasMore = state.hasMore,
             )
         }
     }
@@ -93,10 +93,21 @@ private fun PostList(
     onDelete: (PostId) -> Unit,
     onLoadMore: () -> Unit,
     isLoadingMore: Boolean,
-    hasMore: Boolean,
     contentPadding: PaddingValues,
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(listState) {
+        snapshotFlow {
+            listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index == listState.layoutInfo.totalItemsCount - 1
+        }
+            .filter { it }
+            .collect {
+                onLoadMore()
+            }
+    }
+
     LazyColumn(
+        state = listState,
         contentPadding = contentPadding,
         modifier = Modifier.fillMaxSize(),
     ) {
@@ -162,20 +173,6 @@ private fun PostList(
                         .fillMaxWidth()
                         .padding(16.dp),
                 )
-            }
-        }
-
-        // Кнопка "Load More" (если не загружается)
-        if (!isLoadingMore && hasMore) {
-            item {
-                Button(
-                    onClick = onLoadMore,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Text("Load More")
-                }
             }
         }
     }
