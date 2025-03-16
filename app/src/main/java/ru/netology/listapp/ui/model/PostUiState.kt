@@ -23,6 +23,8 @@ data class PostUiState(
         get() = isLoading && posts.isNotEmpty()
     val showFullLoading: Boolean
         get() = isLoading && posts.isEmpty()
+    val loadingAvailable: Boolean
+        get() = status !is PostLoadState.Loading && hasMore
 
     sealed interface PostLoadState {
         data class Error(val apiError: ApiError) : PostLoadState
@@ -43,8 +45,7 @@ fun Flow<PostAction>.load(
 ): Flow<Mutation<PostUiState>> =
     filter { action ->
         if (action is PostAction.Load) {
-            val currentState = getCurrentState()
-            currentState.status !is PostUiState.PostLoadState.Loading && currentState.hasMore
+            getCurrentState().loadingAvailable
         } else {
             true
         }
